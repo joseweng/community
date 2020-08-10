@@ -26,7 +26,7 @@ public class DiscussPostController {
 
     @ApiOperation(value = "查看所有讨论",notes = "查看所有讨论")
     @GetMapping("/index")
-    public String getDiscussPostList(Model model, Page page){
+    public String getDiscussPostList(Model model,Page page){
         page.setTotalCount(discussPostService.countDiscussPost());
         page.setPageSize(10);
         List<DiscussPost> discussPostList = discussPostService.getDiscussPostListPage(page.getPageNum(),page.getPageSize());
@@ -39,8 +39,10 @@ public class DiscussPostController {
                 map.put("user",user);
                 mapList.add(map);
             }
-            model.addAttribute("mapList",mapList);
         }
+
+        model.addAttribute("mapList",mapList);
+        System.out.println(model.toString());
         return "index";
     }
 }
