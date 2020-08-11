@@ -1,6 +1,8 @@
 package com.difficode.community.service.impl;
 
+import com.difficode.community.entity.LoginTicket;
 import com.difficode.community.entity.User;
+import com.difficode.community.mapper.LoginTicketMapper;
 import com.difficode.community.mapper.UserMapper;
 import com.difficode.community.service.UserService;
 import com.difficode.community.utils.ActivationCode;
@@ -35,11 +37,18 @@ public class UserServiceImpl implements UserService , ActivationCode {
     private String domain;
     @Value("${server.servlet.context-path}")
     private String contextPath;
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
+    /*
+    * get user by userId*/
     @Override
     public User getUserByUserId(int userId) {
         return userMapper.getUserByUserId(userId);
     }
 
+    /*
+    * check register
+    * */
     public Map<String,Object> register(User user){
         Map<String,Object> msgMap = new HashMap<>();
         if (user==null){
@@ -82,8 +91,12 @@ public class UserServiceImpl implements UserService , ActivationCode {
         String content = templateEngine.process("/mail/activation",context);
         mailUtil.sendMail(user.getEmail(),"激活账号",content);
         return  msgMap;
-    }
+        }
 
+
+    /*
+    * check activation
+    * */
     @Override
     public int activation(int id, String code) {
         User realUser = userMapper.getUserByUserId(id);
@@ -97,4 +110,43 @@ public class UserServiceImpl implements UserService , ActivationCode {
         }
 
     }
+
+    /*
+    * check login
+    * */
+    public Map<String ,Object> login(String username,String password,long expiredTime){
+        Map<String,Object> map = new HashMap<>();
+        if (StringUtils.isBlank(username)){
+            map.put("usernameMsg","用户名不能为空");
+            return map;
+        }
+        if (StringUtils.isBlank(password)){
+            map.put("passwordMsg","密码不能为空");
+            return map;
+        }
+        User realUser = userMapper.getUserByUsername(username);
+        if (realUser==null){
+            map.put("usernameMsg","用户不存在");
+            return map;
+        }
+        String realPwd = md5Util.md5(password+realUser.getSalt());
+        if (!StringUtils.equals(realPwd,realUser.getPassword())){
+            map.put("passwordMsg","密码错误");
+            return map;
+        }
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(realUser.getId());
+        loginTicket.setTicket(uuidUtil.genericUUID());
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(expiredTime));
+        loginTicketMapper.saveLoginTicket(loginTicket);
+        map.put("ticket",loginTicket.getTicket());
+        return map;
+    }
+
+    public void logout(String ticket){
+        loginTicketMapper.updateLoginTicketStatus(ticket,1);
+    }
+
+
 }
