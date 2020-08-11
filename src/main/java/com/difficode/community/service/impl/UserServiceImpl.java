@@ -148,5 +148,8 @@ public class UserServiceImpl implements UserService , ActivationCode {
         loginTicketMapper.updateLoginTicketStatus(ticket,1);
     }
 
+    public LoginTicket getLoginTicket(String ticket){
+        return loginTicketMapper.getLoginTicketByTicket(ticket);
+    }
 
 }
