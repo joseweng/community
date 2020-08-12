@@ -4,45 +4,51 @@ import com.difficode.community.entity.DiscussPost;
 import com.difficode.community.entity.User;
 import com.difficode.community.service.DiscussPostService;
 import com.difficode.community.service.UserService;
-import com.difficode.community.vo.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import com.difficode.community.utils.HostHolder;
+import com.difficode.community.utils.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-@Api(tags = "讨论区接口",description = "讨论区接口")
+import java.util.Date;
+
 @Controller
+@RequestMapping("/discuss")
 public class DiscussPostController {
-    @Autowired
-    DiscussPostService discussPostService;
-    @Autowired
-    UserService userService;
 
-    @ApiOperation(value = "查看所有讨论",notes = "查看所有讨论")
-    @GetMapping("/index")
-    public String getDiscussPostList(Model model,Page page){
-        page.setTotalCount(discussPostService.countDiscussPost());
-        page.setPageSize(10);
-        List<DiscussPost> discussPostList = discussPostService.getDiscussPostListPage(page.getPageNum(),page.getPageSize());
-        List<Map<String,Object>> mapList = new ArrayList<>();
-        if (discussPostList!=null){
-            for (DiscussPost discussPost:discussPostList){
-                Map<String,Object> map = new HashMap<>();
-                map.put("discussPost",discussPost);
-                User user = userService.getUserByUserId(discussPost.getUserId());
-                map.put("user",user);
-                mapList.add(map);
-            }
+    @Autowired
+    private HostHolder hostHolder;
+    @Autowired
+    private DiscussPostService discussPostService;
+    @Autowired
+    private JsonUtil jsonUtil;
+    @Autowired
+    private UserService userService;
+    @PostMapping("/add")
+    @ResponseBody
+    public String addDiscussPost(String title,String content){
+        User user = hostHolder.getUser();
+        if (user==null){
+            return jsonUtil.getJson(403,"请先登录");
         }
+        DiscussPost discussPost = new DiscussPost();
+        discussPost.setUserId(user.getId());
+        discussPost.setTitle(title);
+        discussPost.setContent(content);
+        discussPost.setCreateTime(new Date());
+        discussPostService.saveDiscussPost(discussPost);
 
-        model.addAttribute("mapList",mapList);
-        System.out.println(model.toString());
-        return "index";
+        return jsonUtil.getJson(0,"发布成功");
+    }
+
+    @GetMapping("/detail/{id}")
+    public String detail(@PathVariable("id") int id , Model model){
+        DiscussPost discussPost = discussPostService.getDiscussPostById(id);
+        model.addAttribute("discussPost",discussPost);
+        User user = userService.getUserByUserId(discussPost.getUserId());
+        model.addAttribute("user",user);
+        return "site/discuss-detail";
     }
 }
+

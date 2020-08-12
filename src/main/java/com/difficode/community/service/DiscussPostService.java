@@ -8,4 +8,6 @@ public interface DiscussPostService {
     List<DiscussPost> getDiscussPostList();
     List<DiscussPost> getDiscussPostListPage(int pageNum,int pageSize);
     int countDiscussPost();
+    int saveDiscussPost(DiscussPost discussPost);
+    DiscussPost getDiscussPostById(int id);
 }
