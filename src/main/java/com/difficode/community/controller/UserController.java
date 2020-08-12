@@ -1,5 +1,6 @@
 package com.difficode.community.controller;
 
+import com.difficode.community.annotation.LoginRequired;
 import com.difficode.community.entity.User;
 import com.difficode.community.service.UserService;
 import com.difficode.community.utils.HostHolder;
@@ -45,11 +46,15 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+    @LoginRequired
     @GetMapping("/setting")
     public String getUserSetting(){
         return "site/setting";
     }
 
+
+    @LoginRequired
     @PostMapping("/upload")
     public String updateHeader(MultipartFile headerImage, Model model){
         if (headerImage==null){
