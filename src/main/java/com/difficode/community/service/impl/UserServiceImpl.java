@@ -94,6 +94,8 @@ public class UserServiceImpl implements UserService , ActivationCode {
         }
 
 
+
+
     /*
     * check activation
     * */
@@ -150,6 +152,11 @@ public class UserServiceImpl implements UserService , ActivationCode {
 
     public LoginTicket getLoginTicket(String ticket){
         return loginTicketMapper.getLoginTicketByTicket(ticket);
+    }
+
+    @Override
+    public int updateHeaderUrl(int id, String headerUrl) {
+        return userMapper.updateHeaderUrl(id,headerUrl);
     }
 
 }

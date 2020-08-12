@@ -14,4 +14,5 @@ public interface UserService {
     Map<String ,Object> login(String username,String password,long expiredTime);
     void logout(String ticket);
     LoginTicket getLoginTicket(String ticket);
+    int updateHeaderUrl(int id,String headerUrl);
 }
